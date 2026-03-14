@@ -1,0 +1,263 @@
+// ============================================================
+// RBU Recruitment Funnel — Prisma Schema
+// Database: PostgreSQL (Supabase)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ──────────────────────────────────────────────────
+
+enum UserRole {
+  CANDIDATE
+  PARTNER
+  ADMIN
+}
+
+enum SubscriptionPlan {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum SessionStatus {
+  PENDING
+  CONFIRMED
+  DONE
+  NO_SHOW
+  CANCELLED
+}
+
+enum ContactMethod {
+  WHATSAPP
+  ZOOM
+  PHONE
+}
+
+enum FunnelStage {
+  LANDING       // 0 - زار الصفحة
+  SURVEY        // 1 - أكمل الاستبيان
+  VSL           // 2 - شاهد عرض العمل
+  REGISTRATION  // 3 - سجّل في RBU
+  SESSION       // 4 - حجز الجلسة
+  PARTNER       // 5 - شريك فاعل
+}
+
+// ─── USERS ──────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(uuid())
+  firstName     String   @map("first_name")
+  lastName      String   @map("last_name")
+  phone         String   @unique
+  email         String?  @unique
+  address       String?
+  passwordHash  String?  @map("password_hash")
+  role          UserRole @default(CANDIDATE)
+
+  // Referral system
+  referralCode  String   @unique @map("referral_code")
+  referredById  String?  @map("referred_by_id")
+  referredBy    User?    @relation("Referrals", fields: [referredById], references: [id])
+  referrals     User[]   @relation("Referrals")
+
+  // Partner profile
+  partnerSlug   String?  @unique @map("partner_slug")
+  partnerBio    String?  @map("partner_bio")
+  partnerVideo  String?  @map("partner_video_url")
+  partnerPhoto  String?  @map("partner_photo_url")
+  partnerRegion String?  @map("partner_region")
+  joinedAt      DateTime? @map("joined_at")
+
+  // Relations
+  funnelProgress FunnelProgress?
+  subscription   Subscription?
+  sessionsAsCandidate Session[] @relation("CandidateSessions")
+  sessionsAsPartner   Session[] @relation("PartnerSessions")
+  notifications  Notification[]
+  activityLogs   ActivityLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// ─── FUNNEL PROGRESS ────────────────────────────────────────
+
+model FunnelProgress {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currentStage FunnelStage @default(LANDING) @map("current_stage")
+  totalScore   Int         @default(0) @map("total_score")
+
+  // Stage 1: Survey
+  surveyCompleted Boolean   @default(false) @map("survey_completed")
+  surveyScore     Int       @default(0) @map("survey_score")
+  surveyAnswers   Json?     @map("survey_answers")
+  surveyPassedAt  DateTime? @map("survey_passed_at")
+
+  // Stage 2: VSL
+  vslWatched      Boolean   @default(false) @map("vsl_watched")
+  vslWatchPct     Int       @default(0) @map("vsl_watch_pct")
+  vslAnswer1      String?   @map("vsl_answer_1")
+  vslClarityScore Int       @default(0) @map("vsl_clarity_score")
+  vslCompletedAt  DateTime? @map("vsl_completed_at")
+
+  // Stage 3: Registration
+  rbuRegistered   Boolean   @default(false) @map("rbu_registered")
+  firstOrderDone  Boolean   @default(false) @map("first_order_done")
+  trainingsCompleted Json?  @map("trainings_completed")
+  registeredAt    DateTime? @map("registered_at")
+
+  // Stage 4: Session
+  sessionBooked   Boolean   @default(false) @map("session_booked")
+  sessionId       String?   @map("session_id")
+  sessionBookedAt DateTime? @map("session_booked_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("funnel_progress")
+}
+
+// ─── SUBSCRIPTIONS ──────────────────────────────────────────
+
+model Subscription {
+  id       String @id @default(uuid())
+  userId   String @unique @map("user_id")
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan     SubscriptionPlan
+  status   SubscriptionStatus @default(PENDING)
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("TND")
+
+  startDate    DateTime  @map("start_date")
+  endDate      DateTime  @map("end_date")
+  autoRenew    Boolean   @default(true) @map("auto_renew")
+  reminderSent Boolean   @default(false) @map("reminder_sent")
+
+  // Payment gateway
+  stripeSubId    String? @map("stripe_sub_id")
+  stripeCustomer String? @map("stripe_customer_id")
+  lastPaymentAt  DateTime? @map("last_payment_at")
+
+  payments Payment[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}
+
+// ─── PAYMENTS ───────────────────────────────────────────────
+
+model Payment {
+  id             String   @id @default(uuid())
+  subscriptionId String   @map("subscription_id")
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+
+  amount    Decimal  @db.Decimal(10, 2)
+  currency  String   @default("TND")
+  status    String   // succeeded | failed | pending
+  gateway   String   // stripe | paymee | manual
+  reference String?  // gateway transaction ID
+
+  paidAt    DateTime? @map("paid_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("payments")
+}
+
+// ─── SESSIONS ───────────────────────────────────────────────
+
+model Session {
+  id          String @id @default(uuid())
+  candidateId String @map("candidate_id")
+  partnerId   String @map("partner_id")
+  candidate   User   @relation("CandidateSessions", fields: [candidateId], references: [id])
+  partner     User   @relation("PartnerSessions", fields: [partnerId], references: [id])
+
+  scheduledAt    DateTime      @map("scheduled_at")
+  durationMin    Int           @default(30) @map("duration_min")
+  contactMethod  ContactMethod @map("contact_method")
+  status         SessionStatus @default(PENDING)
+
+  notes        String?
+  calEventId   String? @map("cal_event_id")
+
+  reminderSent Boolean @default(false) @map("reminder_sent")
+  confirmedAt  DateTime? @map("confirmed_at")
+  completedAt  DateTime? @map("completed_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("sessions")
+}
+
+// ─── TESTIMONIALS ───────────────────────────────────────────
+
+model Testimonial {
+  id        String @id @default(uuid())
+  partnerId String @map("partner_id")
+  authorName String @map("author_name")
+  authorCity String? @map("author_city")
+  content   String
+  rating    Int    @default(5)
+  isVisible Boolean @default(true) @map("is_visible")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("testimonials")
+}
+
+// ─── NOTIFICATIONS ──────────────────────────────────────────
+
+model Notification {
+  id      String  @id @default(uuid())
+  userId  String  @map("user_id")
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    String  // renewal_reminder | session_reminder | welcome | vsl_reminder
+  channel String  // email | whatsapp | sms
+  subject String?
+  body    String
+  sentAt  DateTime? @map("sent_at")
+  isRead  Boolean   @default(false) @map("is_read")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+// ─── ACTIVITY LOG ───────────────────────────────────────────
+
+model ActivityLog {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action  String // survey_completed | vsl_watched | session_booked | subscription_paid ...
+  details Json?
+  ip      String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("activity_logs")
+}

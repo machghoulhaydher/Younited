@@ -1,0 +1,149 @@
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary:      #1A5FBE;
+  --primary-dark: #0C447C;
+  --primary-light:#E6F1FB;
+  --gold:         #D4A017;
+  --gold-dark:    #854F0B;
+  --gold-light:   #FAEEDA;
+  --green:        #1D9E75;
+  --green-light:  #E1F5EE;
+  --red:          #993C1D;
+  --red-light:    #FAECE7;
+  --gray-bg:      #F5F7FA;
+  --border:       rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+}
+
+@layer components {
+
+  /* ── Buttons ─────────────────────────────────────── */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3 rounded-xl font-bold text-sm
+           bg-[#D4A017] text-[#412402]
+           hover:bg-[#BA7517] active:scale-95
+           transition-all duration-150 cursor-pointer border-none;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3 rounded-xl font-bold text-sm
+           bg-[#1A5FBE] text-white
+           hover:bg-[#0C447C] active:scale-95
+           transition-all duration-150 cursor-pointer border-none;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3 rounded-xl font-semibold text-sm
+           border border-gray-200 bg-white text-gray-600
+           hover:bg-gray-50 active:scale-95
+           transition-all duration-150 cursor-pointer;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2
+           px-5 py-2 rounded-xl font-bold text-sm
+           bg-[#993C1D] text-white
+           hover:bg-[#7A2E13] active:scale-95
+           transition-all duration-150 cursor-pointer border-none;
+  }
+
+  /* ── Cards ──────────────────────────────────────── */
+  .card {
+    @apply bg-white rounded-2xl border border-gray-100 shadow-sm p-5;
+  }
+
+  .card-blue {
+    @apply bg-[#1A5FBE] rounded-2xl p-5 text-white;
+  }
+
+  /* ── Inputs ─────────────────────────────────────── */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200
+           bg-gray-50 text-gray-900 text-sm font-medium
+           focus:outline-none focus:border-[#1A5FBE] focus:bg-white
+           transition-colors duration-150 placeholder:text-gray-400
+           placeholder:font-normal;
+  }
+
+  .input-error {
+    @apply border-[#993C1D] bg-[#FAECE7];
+  }
+
+  /* ── Option buttons (survey) ─────────────────────── */
+  .opt-btn {
+    @apply w-full text-right px-4 py-3 rounded-xl border border-gray-200
+           bg-gray-50 text-gray-700 text-sm font-medium
+           hover:border-[#1A5FBE] hover:bg-white
+           transition-all duration-150 cursor-pointer;
+  }
+
+  .opt-btn-selected {
+    @apply border-[#D4A017] border-2 bg-[#FAEEDA] text-[#854F0B] font-bold;
+  }
+
+  .opt-btn-good {
+    @apply border-[#1D9E75] border-2 bg-[#E1F5EE] text-[#0F6E56] font-bold;
+  }
+
+  .opt-btn-bad {
+    @apply border-[#993C1D] border-2 bg-[#FAECE7] text-[#993C1D] font-bold;
+  }
+
+  /* ── Badges ─────────────────────────────────────── */
+  .badge-blue   { @apply text-xs font-semibold px-3 py-1 rounded-full bg-[#E6F1FB] text-[#185FA5]; }
+  .badge-gold   { @apply text-xs font-semibold px-3 py-1 rounded-full bg-[#FAEEDA] text-[#854F0B]; }
+  .badge-green  { @apply text-xs font-semibold px-3 py-1 rounded-full bg-[#E1F5EE] text-[#0F6E56]; }
+  .badge-red    { @apply text-xs font-semibold px-3 py-1 rounded-full bg-[#FAECE7] text-[#993C1D]; }
+  .badge-gray   { @apply text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-500; }
+
+  /* ── Progress bar ───────────────────────────────── */
+  .progress-bar {
+    @apply h-1.5 bg-gray-100 rounded-full overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full bg-[#D4A017] rounded-full transition-all duration-500;
+  }
+
+  /* ── Section label ──────────────────────────────── */
+  .sec-label {
+    @apply text-xs font-bold text-gray-400 uppercase tracking-widest mb-3;
+  }
+
+  /* ── Alert box ──────────────────────────────────── */
+  .alert-gold {
+    @apply bg-[#FAEEDA] border-r-4 border-[#D4A017] rounded-xl
+           px-4 py-3 text-sm text-[#854F0B] leading-relaxed;
+  }
+  .alert-red {
+    @apply bg-[#FAECE7] border-r-4 border-[#993C1D] rounded-xl
+           px-4 py-3 text-sm text-[#993C1D] leading-relaxed;
+  }
+  .alert-green {
+    @apply bg-[#E1F5EE] border-r-4 border-[#1D9E75] rounded-xl
+           px-4 py-3 text-sm text-[#0F6E56] leading-relaxed;
+  }
+}
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #1A5FBE; border-radius: 3px; }
+
+/* Range slider */
+input[type=range] { accent-color: #D4A017; }

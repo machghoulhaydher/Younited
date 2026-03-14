@@ -1,0 +1,53 @@
+# ============================================================
+# RBU Funnel — Environment Variables
+# Copy this file to .env.local and fill in your values
+# ============================================================
+
+# ── DATABASE (Supabase) ──────────────────────────────────────
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres"
+DIRECT_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres"
+
+# ── NEXT AUTH ───────────────────────────────────────────────
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="generate-with: openssl rand -base64 32"
+
+# ── JWT ─────────────────────────────────────────────────────
+JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
+JWT_EXPIRES_IN="7d"
+
+# ── STRIPE (Payment) ────────────────────────────────────────
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# Subscription prices (create in Stripe dashboard)
+STRIPE_MONTHLY_PRICE_ID="price_..."
+STRIPE_YEARLY_PRICE_ID="price_..."
+
+# ── EMAIL (Resend) ───────────────────────────────────────────
+RESEND_API_KEY="re_..."
+EMAIL_FROM="noreply@yourdomain.com"
+EMAIL_FROM_NAME="RBU Funnel"
+
+# ── VIDEO (MUX / Bunny.net) ──────────────────────────────────
+MUX_TOKEN_ID="..."
+MUX_TOKEN_SECRET="..."
+VSL_VIDEO_ID="your-mux-video-id"
+
+# Or use Bunny.net:
+# BUNNY_API_KEY="..."
+# BUNNY_VIDEO_ID="..."
+
+# ── APP CONFIG ───────────────────────────────────────────────
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_NAME="RBU Network"
+NEXT_PUBLIC_STRIPE_KEY="pk_test_..."
+
+# Subscription pricing (in local currency)
+MONTHLY_PRICE=89
+YEARLY_PRICE=790
+CURRENCY="TND"
+
+# Admin credentials (for first setup)
+ADMIN_EMAIL="admin@yourdomain.com"
+ADMIN_PASSWORD="change-this-immediately"
